@@ -9,38 +9,38 @@
         <div class="container">
             <!-- 查询条件 -->
             <div class="handle-box">
-                <el-button type="primary" v-if="query.state === '2'" size="mini" icon="el-icon-circle-check"
+                <el-button type="primary" v-if="requestData.state === '2'" size="mini" icon="el-icon-circle-check"
                     class="handle-del mr10" @click="batchPass()">批量通过</el-button>
                 <el-button type="danger" v-else size="mini" icon="el-icon-delete" class="handle-del mr10"
                     @click="batchDelApply()">
                     批量删除
                 </el-button>
-                <el-button type="danger" v-if="query.state === '2'" size="mini" icon="el-icon-delete"
+                <el-button type="danger" v-if="requestData.state === '2'" size="mini" icon="el-icon-delete"
                     class="handle-del mr10" @click="batchRefuse()">
                     批量驳回
                 </el-button>
             </div>
-            <el-form :inline="true" :model="query" class="demo-form-inline">
+            <el-form :inline="true" :model="requestData" class="demo-form-inline">
                 <el-form-item label="申请状态">
-                    <el-select v-model="query.state" @change="applySatate" placeholder="全部申请" label="状态"
+                    <el-select v-model="requestData.state" @change="applySatate" placeholder="全部申请" label="状态"
                         class="handle-select mr10">
                         <el-option key="0" label="已拒绝" value="0"></el-option>
-                        <el-option key="1" label="申请成功" value="1"></el-option>
+                        <el-option key="1" label="已通过" value="1"></el-option>
                         <el-option key="2" label="申请中" value="2"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="公司名称">
-                    <el-select v-model="query.companyId" placeholder="请选择公司" @focus="getCompanyList">
+                    <el-select v-model="requestData.companyId" placeholder="请选择公司" @focus="getCompanyList">
                         <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
                         </el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="申请时间">
-                    <el-date-picker v-model="query.applyTimeStart" type="date" placeholder="开始日期"
-                        format="yyyy 年 MM 月 dd 日" value-format="yyyy:MM:dd" class="handle-input mr10">
+                    <el-date-picker v-model="requestData.applyTimeStart" type="date" placeholder="开始日期"
+                        format="yyyy-MM-dd" value-format="yyyy-MM-dd" class="handle-input mr10">
                     </el-date-picker>
-                    <el-date-picker v-model="query.applyTimeEnd" type="date" placeholder="结束日期"
-                        format="yyyy 年 MM 月 dd 日" value-format="yyyy:MM:dd" class="handle-input mr10">
+                    <el-date-picker v-model="requestData.applyTimeEnd" type="date" placeholder="结束日期"
+                    format="yyyy-MM-dd" value-format="yyyy-MM-dd" class="handle-input mr10">
                     </el-date-picker>
                 </el-form-item>
 
@@ -53,11 +53,11 @@
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="title" label="职位名称"></el-table-column>
                 <el-table-column prop="userName" label="用户名称"></el-table-column>
-                <el-table-column prop="hrname" label="HR姓名" align="center"></el-table-column>
+                <el-table-column prop="hRName" label="HR姓名" align="center"></el-table-column>
                 <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                 <el-table-column label="申请状态" align="center">
                     <template slot-scope="scope">
-                        <el-tag v-if="scope.row.state === 1" type="success">申请成功</el-tag>
+                        <el-tag v-if="scope.row.state === 1" type="success">已通过</el-tag>
                         <el-tag v-if="scope.row.state === 2">申请中</el-tag>
                         <el-tag v-if="scope.row.state === 0" type="danger">已拒绝</el-tag>
                     </template>
@@ -79,7 +79,7 @@
             
             <!-- 分页组件 -->
             <div class="block" style="margin-top: 50px; float: right">
-                <el-pagination :current-page="query.page" :page-sizes="[5, 10, 15, 20]" :page-size="query.pageSize"
+                <el-pagination :current-page="requestData.page" :page-sizes="[5, 10, 15, 20]" :page-size="requestData.pageSize"
                     layout="total, sizes, prev, pager, next, jumper" :total="pageTotal" @size-change="handleSizeChange"
                     @current-change="handleCurrentChange" />
             </div>
@@ -87,19 +87,21 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="理由" :visible.sync="editVisible" width="30%">
-            <el-form ref="notify" :model="applyMap" :rules="rules" label-width="100px">
-                <el-form-item label="面试地点" prop="address" v-if="!isRefuse">
+            <el-form ref="applyMap" :model="applyMap" :rules="rules" label-width="100px">
+                <el-form-item label="面试时间" prop="time">
+                    <el-date-picker v-model="applyMap.time" type="date" placeholder="开始日期"
+                    format="yyyy-MM-dd" value-format="yyyy-MM-dd" class="handle-input mr10">
+                </el-date-picker>
+                </el-form-item>
+                <el-form-item label="面试地点" prop="address">
                     <el-input v-model="applyMap.address"></el-input>
                 </el-form-item>
-                <el-form-item label="面试备注" prop="memo" v-if="!isRefuse">
+                <el-form-item label="面试备注" prop="memo">
                     <el-input type="textarea" v-model="applyMap.memo"></el-input>
-                </el-form-item>
-                <el-form-item label="操作理由" prop="content">
-                    <el-input type="textarea" v-model="applyMap.content"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="saveEdit('notify')" size="mini">确 定</el-button>
+                <el-button type="primary" @click="saveEdit('applyMap')" size="mini">确 定</el-button>
                 <el-button type="info" @click="restNotify" size="mini">重置</el-button>
                 <el-button @click="editVisible = false" size="mini">取 消</el-button>
             </span>
@@ -206,8 +208,7 @@ export default {
             education: [],
             experience: [],
             project: [],
-            notify: {},
-            query: {
+            requestData: {
                 page: 1,
                 pageSize: 5,
                 state: "1"
@@ -215,7 +216,6 @@ export default {
             multipleSelection: [],
             editVisible: false,
             resumeVisible: false,
-            isRefuse: false,
             resumeTitle: "",
             pageTotal: 0,
             form: {},
@@ -223,8 +223,11 @@ export default {
             handelObject:[],
             rules: {
                 address: [
-                    { required: true, message: '请输入面试地址', trigger: 'blur' },
-                ],               
+                    { required: true, message: '请确认面试地址', trigger: 'blur' },
+                ],     
+                time: [
+                    { required: true, message: '请确认面试时间', trigger: 'blur' },
+                ],           
             }
         };
     },
@@ -234,7 +237,7 @@ export default {
     methods: {
         // 获取申请列表
         getData() {
-            api.getApplyList(this.query).then((result) => {
+            api.getApplyList(this.requestData).then((result) => {
                 this.tableData = result.data.records;
                 this.pageTotal = result.data.total;
             });
@@ -260,15 +263,15 @@ export default {
         },
         // 由申请状态获取列表
         applySatate(val) {
-            this.query.state = val;
+            this.requestData.state = val;
             this.getData();
         },
         // 重置查询表单
         handRefresh() {
-            this.query = {}
-            this.query.page = 1
-            this.query.pageSize = 5
-            this.query.state = "1"
+            this.requestData = {}
+            this.requestData.page = 1
+            this.requestData.pageSize = 5
+            this.requestData.state = "1"
             this.getData()
         },
         // 触发搜索按钮
@@ -280,8 +283,7 @@ export default {
             // 二次确认删除
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
-            })
-                .then(() => {
+            }).then(() => {
                     api.delApplyById(val.id).then((result) => {
                         if (result.success == true) {
                             this.$message.success('删除成功');
@@ -295,41 +297,26 @@ export default {
         },
         // 重置消息
         restNotify(){
-            this.applyMap.content = ""
             this.applyMap.memo = ""
             this.applyMap.address = ""
+            this.applyMap.time= ""
         },
         // 保存消息
-        saveEdit(notify) {
+        saveEdit(val) {
             console.log(this.applyMap);
-            this.$refs[notify].validate((valid) => {
-                if(valid){
-                    if(!this.isRefuse){
-                            api.batchPass(this.applyMap)
-                            .then((result) => {
-                                if (result.success == true) {
-                                    this.$message.success(result.msg);
-                                    this.getData()
-                                } else {
-                                    this.$message.error(result.msg);
-                                }
-                            })
-                            .catch(() => { });
-                        }
-
-                    if(this.isRefuse){
-                        api.batchRefuse(this.applyMap).then((result) => {
+            this.$refs[val].validate((valid) => {
+                if (valid) {
+                    api.batchPass(this.applyMap)
+                        .then((result) => {
                             if (result.success == true) {
                                 this.$message.success(result.msg);
                                 this.getData()
                             } else {
                                 this.$message.error(result.msg);
                             }
-                            })
-                            .catch(() => { });
-                    }
-                this.editVisible = false
-                
+                        })
+                        .catch(() => { });
+                    this.editVisible = false
                 }
             })
         },
@@ -373,52 +360,66 @@ export default {
 
         // 通过申请
         batchPass(val) {
+            const ids = []
             this.applyMap = {}
-            this.isRefuse = false
-
             if(val){
-                const data = [val]
-                this.applyMap.data = data
+                ids[0] = val.id
             }
-
             if(!val){
                 if (this.multipleSelection.length == 0) {
                     this.$message.error('未选中数据');
                     return;
                 }
-            this.applyMap.data = this.multipleSelection
+            this.multipleSelection.map((item)=>{
+                 ids.push(item.id)
+            })
             }
-            console.log(this.applyMap);
+            this.applyMap.ids = ids
             this.editVisible = true
         },
         // 拒绝申请
         batchRefuse(val) {
-            this.applyMap = {}
-            this.isRefuse = true
-
+            const ids = []
             if(val){
-                const data = [val]
-                this.applyMap.data = data
+                ids[0] = val.id
             }
             if(!val){
                 if (this.multipleSelection.length == 0) {
                     this.$message.error('未选中数据');
                     return;
                 }
-                this.applyMap.data = this.multipleSelection
+            this.multipleSelection.map((item)=>{
+                 ids.push(item.id)
+            })
             }
-            console.log(this.applyMap);
-            this.editVisible = true
+
+            if(ids.length == 0){
+                return 
+            }
+            this.$confirm('你正在拒绝用户投递的职位，确定继续操作吗？', '提示', {
+                type: 'warning'
+            }).then(() => {
+                api.batchRefuse(ids).then((result) => {
+                if (result.success == true) {
+                    this.$message.success(result.msg);
+                    this.getData()
+                } else {
+                    this.$message.error(result.msg);
+                }
+            }).catch(() => { });
+            })
+
+           
 
         },
         // 改变当前页
         handleCurrentChange(val) {
-            this.query.page = val;
+            this.requestData.page = val;
             this.getData();
         },
         // 改变每页展示的条数
         handleSizeChange(val) {
-            this.query.pageSize = val;
+            this.requestData.pageSize = val;
             this.getData();
         }
     }

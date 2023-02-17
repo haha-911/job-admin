@@ -100,26 +100,10 @@
                 </el-card>
             </el-col>
         </el-row>
-
-        <!-- 图表数据 -->
-        <el-row :gutter="20">
-            <el-col :span="12">
-                <el-card shadow="hover">
-                    <schart ref="bar" class="schart" canvasId="bar" :options="options"></schart>
-                </el-card>
-            </el-col>
-            <el-col :span="12">
-                <el-card shadow="hover">
-                    <schart ref="line" class="schart" canvasId="line" :options="options2"></schart>
-                </el-card>
-            </el-col>
-        </el-row>
     </div>
 </template>
 
 <script>
-import Schart from 'vue-schart';
-import bus from '@/components/common/bus';
 import api from '@/api/login/login'
 export default {
     name: 'dashboard',
@@ -183,79 +167,16 @@ export default {
                     value: 1065
                 }
             ],
-            options: {
-                type: 'bar',
-                title: {
-                    text: '最近一周各品类销售图'
-                },
-                xRorate: 25,
-                labels: ['周一', '周二', '周三', '周四', '周五'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 190, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [144, 198, 150, 235, 120]
-                    }
-                ]
-            },
-            options2: {
-                type: 'line',
-                title: {
-                    text: '最近几个月各品类销售趋势图'
-                },
-                labels: ['6月', '7月', '8月', '9月', '10月'],
-                datasets: [
-                    {
-                        label: '家电',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '百货',
-                        data: [164, 178, 150, 135, 160]
-                    },
-                    {
-                        label: '食品',
-                        data: [74, 118, 200, 235, 90]
-                    }
-                ]
-            }
         };
-    },
-    components: {
-        Schart
     },
     computed: {
        
     },
     created() {
-        // this.handleListener();
-        // this.changeDate();
-
         this.getUserInfo()
     },
-    // activated() {
-    //     this.handleListener();
-    // },
-    // deactivated() {
-    //     window.removeEventListener('resize', this.renderChart);
-    //     bus.$off('collapse', this.handleBus);
-    // },
     methods: {
-        changeDate() {
-            const now = new Date().getTime();
-            this.data.forEach((item, index) => {
-                const date = new Date(now - (6 - index) * 86400000);
-                item.name = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-            });
-        },
-
+        // 获取上次登录记录
         getPrev(name){
             api.getPrevLogin(name).then((result)=>{
                 if(result.success){
@@ -266,35 +187,16 @@ export default {
         },
 
         getUserInfo(){
-           let str = localStorage.getItem('userInfo')
-           let data = JSON.parse(str)
-           this.userInfo = data
+           this.userInfo = JSON.parse(localStorage.getItem('userInfo')) 
         //    根据用户名获取上次登录信息
            this.getPrev(this.userInfo.username)
         }
-        // handleListener() {
-        //     bus.$on('collapse', this.handleBus);
-        //     // 调用renderChart方法对图表进行重新渲染
-        //     window.addEventListener('resize', this.renderChart);
-        // },
-        // handleBus(msg) {
-        //     setTimeout(() => {
-        //         this.renderChart();
-        //     }, 200);
-        // },
-        // renderChart() {
-        //     this.$refs.bar.renderChart();
-        //     this.$refs.line.renderChart();
-        // }
     }
 };
 </script>
 
 
 <style scoped>
-.el-row {
-    margin-bottom: 20px;
-}
 
 .grid-content {
     display: flex;

@@ -1,20 +1,16 @@
 <template>
     <div class="login-wrap">
-        <div class="ms-login">     
+        <div class="ms-login">
             <div class="ms-title">后台管理系统登录</div>
-            <el-form :model="param" :rules="rules" ref="login"  class="ms-content">
+            <el-form :model="param" :rules="rules" ref="login" class="ms-content">
                 <el-form-item prop="username">
                     <el-input v-model="param.username" placeholder="username">
                         <el-button slot="prepend" icon="el-icon-lx-people"></el-button>
                     </el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input
-                        type="password"
-                        placeholder="password"
-                        v-model="param.password"
-                        @keyup.enter.native="submitForm()"
-                    >
+                    <el-input type="password" placeholder="password" v-model="param.password"
+                        @keyup.enter.native="submitForm()">
                         <el-button slot="prepend" icon="el-icon-lx-lock"></el-button>
                     </el-input>
                 </el-form-item>
@@ -23,19 +19,19 @@
                 </div>
             </el-form>
         </div>
-    </div>
+</div>
 </template>
 
 <script>
 import api from '@/api/login/login';
 
 export default {
-    data: function() {
+    data: function () {
         return {
             param: {
-                username:''
+                username: ''
             },
-            userInfo:{},
+            userInfo: {},
             rules: {
                 username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
                 password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
@@ -44,39 +40,32 @@ export default {
     },
     methods: {
         submitForm() {
-           this.param.username =  this.param.username.trim()
-
-           console.log(this.param);
+            this.param.username = this.param.username.trim()
             this.$refs.login.validate(valid => {
                 if (valid) {
-                    api.login(this.param).then((result)=>{
-                        if(result.success){
+                    api.login(this.param).then((result) => {
+                        if (result.success) {
                             const token = result.data
                             localStorage.setItem('token', token)
                             this.$message.success(result.msg);
                             this.getUserInfo()
-                            
-                           
-                        }else{
+                        } else {
                             this.$message.error(result.msg)
                         }
-                        
+
                     })
-                   
+
                 } else {
                     this.$message.error('请输入账号和密码');
                     return false;
                 }
             });
         },
-        getUserInfo(){
-            api.getUserInfo().then((result)=>{
-                if(result.success){
-                    this.userInfo = result.data
-                    localStorage.setItem('userInfo',JSON.stringify(this.userInfo))
-                    this.$router.push("/")
-                    console.log(this.userInfo)
-                } 
+        getUserInfo() {
+            api.getUserInfo().then((result) => {
+                this.userInfo = result.data
+                localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+                this.$router.push("/")
             })
         }
     },
@@ -100,6 +89,7 @@ export default {
     color: #fff;
     border-bottom: 1px solid #ddd;
 }
+
 .ms-login {
     position: absolute;
     left: 50%;
@@ -110,17 +100,21 @@ export default {
     background: rgba(255, 255, 255, 0.3);
     overflow: hidden;
 }
+
 .ms-content {
     padding: 30px 30px;
 }
+
 .login-btn {
     text-align: center;
 }
+
 .login-btn button {
     width: 100%;
     height: 36px;
     margin-bottom: 10px;
 }
+
 .login-tips {
     font-size: 12px;
     line-height: 30px;

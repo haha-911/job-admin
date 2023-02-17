@@ -3,43 +3,43 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item> <i class="el-icon-lx-people"></i> 招聘管理 </el-breadcrumb-item>
-                <el-breadcrumb-item>面试</el-breadcrumb-item>
+                <el-breadcrumb-item>面试管理</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <!-- 查询条件 -->
             <div class="handle-box">
-                <el-button type="primary" v-if="query.state === '2'" size="mini" icon="el-icon-circle-check"
+                <el-button type="primary" v-if="requestData.state === '2'" size="mini" icon="el-icon-circle-check"
                     class="handle-del mr10" @click="batchPass()">批量通过</el-button>
                 <el-button type="danger" v-else size="mini" icon="el-icon-delete" class="handle-del mr10"
                     @click="batchDel()">
                     批量删除
                 </el-button>
-                <el-button type="danger" v-if="query.state === '2'" size="mini" icon="el-icon-delete"
+                <el-button type="danger" v-if="requestData.state === '2'" size="mini" icon="el-icon-delete"
                     class="handle-del mr10" @click="batchRefuse()">
                     批量驳回
                 </el-button>
             </div>
-            <el-form :inline="true" :model="query" class="demo-form-inline">
+            <el-form :inline="true" :model="requestData" class="demo-form-inline">
                 <el-form-item label="面试状态">
-                    <el-select v-model="query.state" @change="interviewSatate" placeholder="全部申请" label="状态"
+                    <el-select v-model="requestData.state" @change="interviewSatate" placeholder="全部申请" label="状态"
                         class="handle-select mr10">
-                        <el-option key="0" label="面试失败" value="0"></el-option>
-                        <el-option key="1" label="面试成功" value="1"></el-option>
+                        <el-option key="0" label="不合适" value="0"></el-option>
+                        <el-option key="1" label="已通过" value="1"></el-option>
                         <el-option key="2" label="面试中" value="2"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="公司名称">
-                    <el-select v-model="query.companyId" placeholder="请选择公司" @focus="getCompanyList">
+                    <el-select v-model="requestData.companyId" placeholder="请选择公司" @focus="getCompanyList">
                         <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
                         </el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="申请时间">
-                    <el-date-picker v-model="query.applyTimeStart" type="date" placeholder="开始日期"
+                    <el-date-picker v-model="requestData.applyTimeStart" type="date" placeholder="开始日期"
                         format="yyyy 年 MM 月 dd 日" value-format="yyyy:MM:dd" class="handle-input mr10">
                     </el-date-picker>
-                    <el-date-picker v-model="query.applyTimeEnd" type="date" placeholder="结束日期"
+                    <el-date-picker v-model="requestData.applyTimeEnd" type="date" placeholder="结束日期"
                         format="yyyy 年 MM 月 dd 日" value-format="yyyy:MM:dd" class="handle-input mr10">
                     </el-date-picker>
                 </el-form-item>
@@ -82,16 +82,16 @@
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="title" label="职位名称"></el-table-column>
                 <el-table-column prop="userName" label="用户名称"></el-table-column>
-                <el-table-column prop="hrname" label="HR姓名" align="center"></el-table-column>
+                <el-table-column prop="hRName" label="HR姓名" align="center"></el-table-column>
                 <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                 <el-table-column label="面试状态" align="center">
                     <template slot-scope="scope">
-                        <el-tag v-if="scope.row.status === 1" type="success">面试成功</el-tag>
+                        <el-tag v-if="scope.row.status === 1" type="success">已通过</el-tag>
                         <el-tag v-if="scope.row.status === 2">面试中</el-tag>
-                        <el-tag v-if="scope.row.status === 0" type="danger">面试失败</el-tag>
+                        <el-tag v-if="scope.row.status === 0" type="danger">不合适</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column v-if="query.state === '2'" prop="createTime" label="创建时间"></el-table-column>
+                <el-table-column v-if="requestData.state === '2'" prop="createTime" label="创建时间"></el-table-column>
                 <el-table-column v-else prop="time" label="操作时间"></el-table-column>
                 <el-table-column label="操作" width="280px" align="center">
                     <template slot-scope="scope">
@@ -109,7 +109,7 @@
             
             <!-- 分页组件 -->
             <div class="block" style="margin-top: 50px; float: right">
-                <el-pagination :current-page="query.page" :page-sizes="[5, 10, 15, 20]" :page-size="query.pageSize"
+                <el-pagination :current-page="requestData.page" :page-sizes="[5, 10, 15, 20]" :page-size="requestData.pageSize"
                     layout="total, sizes, prev, pager, next, jumper" :total="pageTotal" @size-change="handleSizeChange"
                     @current-change="handleCurrentChange" />
             </div>
@@ -117,11 +117,10 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="面试评价" :visible.sync="editVisible" width="30%">
-            <el-form ref="comments" :model="form" :rules="rules" label-width="100px">
+            <el-form  :model="form" :rules="rules" label-width="100px">
                 <el-form-item  prop="comments" >
                     <el-input type="textarea" v-model="comments"></el-input>
                 </el-form-item>
-              
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="saveEdit()" size="mini">确 定</el-button>
@@ -233,7 +232,7 @@ export default {
             project: [],
             comments: "",
             resumeTitle: "",
-            query: {
+            requestData: {
                 page: 1,
                 pageSize: 5,
                 state: "1"
@@ -245,8 +244,7 @@ export default {
             pageTotal: 0,
             form: {},
             handObject:[],
-            rules: {              
-            }
+            rules: {}
         };
     },
     created() {
@@ -255,7 +253,7 @@ export default {
     methods: {
         // 获取申请列表
         getData() {
-            api.getInterviewList(this.query).then((result) => {
+            api.getInterviewList(this.requestData).then((result) => {
                 this.tableData = result.data.records;
                 this.pageTotal = result.data.total;
             });
@@ -281,15 +279,15 @@ export default {
         },
         // 由面试状态获取列表
         interviewSatate(val) {
-            this.query.state = val;
+            this.requestData.state = val;
             this.getData();
         },
         // 重置查询表单
         handRefresh() {
-            this.query = {}
-            this.query.page = 1
-            this.query.pageSize = 5
-            this.query.state = "1"
+            this.requestData = {}
+            this.requestData.page = 1
+            this.requestData.pageSize = 5
+            this.requestData.state = "1"
             this.getData()
         },
         // 触发搜索按钮
@@ -298,10 +296,9 @@ export default {
         },
         // 删除操作
         batchDel(val) {
-            this.handObject = []
-
+            const ids = []
             if(val){
-                this.handObject.push(val)
+                ids.push(val.id)
             }
             if (!val){
                 if (this.multipleSelection.length == 0) {
@@ -309,16 +306,15 @@ export default {
                     return;
                 }
                 this.multipleSelection.map((item)=>{
-                this.handObject.push(item.id)
+                ids.push(item.id)
             })
             }
-            console.log(this.handObject);
 
             // 二次确认删除
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
             }).then(() => {
-                    api.delInterview(this.handObject).then((result) => {
+                    api.delInterview(ids).then((result) => {
                         if (result.success == true) {
                             this.$message.success('删除成功');
                             this.getData();
@@ -327,7 +323,6 @@ export default {
                         }
                     });
                 })
-                .catch(() => { });
         },
         // 重置消息
         restNotify(){
@@ -337,7 +332,7 @@ export default {
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
-            console.log(val);
+
         },
         
         // 保存消息
@@ -417,12 +412,12 @@ export default {
         },
         // 改变当前页
         handleCurrentChange(val) {
-            this.query.page = val;
+            this.requestData.page = val;
             this.getData();
         },
         // 改变每页展示的条数
         handleSizeChange(val) {
-            this.query.pageSize = val;
+            this.requestData.pageSize = val;
             this.getData();
         }
     }

@@ -3,26 +3,28 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-people"></i> 求职者
+                    <i class="el-icon-lx-people"></i> 管理员
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
+            <!-- 条件区域 -->
             <div class="handle-box">
                 <el-button type="primary" size="mini" icon="el-icon-friendadd" class="handle-del mr10"
                     @click="addUser">添加用户</el-button>
                 <el-button type="danger" size="mini" icon="el-icon-delete" class="handle-del mr10"
                     @click="delAllSelection">批量删除</el-button>
-                <el-input v-model="query.username" placeholder="用户名" class="handle-input mr10"></el-input>
-                <el-date-picker v-model="query.startTime" type="date" placeholder="开始日期" format="yyyy 年 MM 月 dd 日"
-                    value-format="yyyy:MM:dd" class="handle-input mr10">
+                <el-input v-model="requestData.username" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-date-picker v-model="requestData.startTime" type="date" placeholder="开始日期" format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd" class="handle-input mr10">
                 </el-date-picker>
-                <el-date-picker v-model="query.endTime" type="date" placeholder="结束日期" format="yyyy 年 MM 月 dd 日"
-                    value-format="yyyy:MM:dd" class="handle-input mr10">
+                <el-date-picker v-model="requestData.endTime" type="date" placeholder="结束日期" format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd" class="handle-input mr10">
                 </el-date-picker>
                 <el-button type="primary" size="mini" icon="el-icon-search" @click="handleSearch">搜索</el-button>
                 <el-button icon="el-icon-refresh" size="mini" @click="handRefresh">重置</el-button>
             </div>
+            <!-- 数据区域 -->
             <el-table :data="tableData" border class="table" ref="multipleTable" header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -49,17 +51,18 @@
             </el-table>
             <!-- 分页组件 -->
             <div class="block" style="margin-top:50px;float:right">
-                <el-pagination :current-page="query.page" :page-sizes="[5, 10, 15, 20]" :page-size="query.pageSize"
+                <el-pagination :current-page="requestData.page" :page-sizes="[5, 10, 15, 20]" :page-size="requestData.pageSize"
                     layout="total, sizes, prev, pager, next, jumper" :total="pageTotal" @size-change="handleSizeChange"
                     @current-change="handleCurrentChange" />
             </div>
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog :title="visibleTitle" :visible.sync="editVisible" width="30%">
+        <el-dialog :title="visibleTitle" :visible.sync="editVisible" width="32%">
             <el-form ref="form" :model="form" :rules="rules" label-width="70px">
                 <el-form-item label="用户名" prop="username">
-                    <el-input v-model="form.username" disabled></el-input>
+                    <el-input v-model="form.username" v-if="!isAdd" disabled></el-input>
+                    <el-input v-model="form.username" v-else></el-input>
                 </el-form-item>
                 <el-form-item label="昵称" prop="nickname">
                     <el-input v-model="form.nickname"></el-input>
@@ -72,8 +75,9 @@
                 </el-form-item>
                 <el-form-item label="头像">
                     <el-upload class="avatar-uploader" action="/api/file/upload" :show-file-list="false"
-                        :on-success="handleAvatarSuccess">
+                        :on-success="handleAvatarSuccess" :headers="headerObj">
                         <img v-if="form.avatar" :src="form.avatar" class="avatar">
+                        <img v-if="imgUrl" :src="form.avatar" class="avatar">
                         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
                 </el-form-item>
@@ -94,7 +98,7 @@ export default {
     data() {
         return {
             tableData: {},
-            query: {
+            requestData: {
                 email: "",
                 endTime: "",
                 page: 1,
@@ -103,9 +107,13 @@ export default {
                 type: 1,
                 username: ""
             },
+            headerObj:{
+                token:localStorage.getItem('token')
+            },
             multipleSelection: [],
             editVisible: false,
             isAdd: false,
+            imgUrl:'',
             visibleTitle: '',
             pageTotal: 0,
             form: {},
@@ -133,7 +141,7 @@ export default {
     methods: {
         // 获取 用户列表
         getData() {
-            api.getUserList(this.query).then((result) => {
+            api.getUserList(this.requestData).then((result) => {
                 console.log(result);
                 this.tableData = result.data.records
                 this.pageTotal = result.data.total
@@ -141,10 +149,10 @@ export default {
         },
         // 重置查询表单
         handRefresh() {
-            this.query.username = ''
-            this.query.startTime = ''
-            this.query.email = ''
-            this.query.endTime = ''
+            this.requestData.username = ''
+            this.requestData.startTime = ''
+            this.requestData.email = ''
+            this.requestData.endTime = ''
 
         },
         // 触发搜索按钮
@@ -258,6 +266,7 @@ export default {
         handleAvatarSuccess(response) {
             if (response.success == true) {
                 this.form.avatar = response.msg
+                this.imgUrl = response.msg
                 console.log(response.msg);
             } else {
                 this.$message.error(response.msg + "请重新上传！")
@@ -267,12 +276,12 @@ export default {
         },
         // 改变当前页
         handleCurrentChange(val) {
-            this.query.page = val
+            this.requestData.page = val
             this.getData();
         },
         // 改变每页展示的条数
         handleSizeChange(val) {
-            this.query.pageSize = val
+            this.requestData.pageSize = val
             this.getData()
         }
     }
@@ -318,6 +327,7 @@ export default {
     border-radius: 6px;
     cursor: pointer;
     position: relative;
+    width: 200px;
     overflow: hidden;
 }
 

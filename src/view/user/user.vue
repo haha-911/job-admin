@@ -3,26 +3,30 @@
         <div class="crumbs">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item>
-                    <i class="el-icon-lx-people"></i> 求职者
+                    <i class="el-icon-lx-people"></i> 普通用户
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
+
+            <!-- 条件区域 -->
             <div class="handle-box">
                 <el-button type="primary" size="mini" icon="el-icon-friendadd" class="handle-del mr10"
                     @click="addUser">添加用户</el-button>
                 <el-button type="danger" size="mini" icon="el-icon-delete" class="handle-del mr10"
                     @click="delAllSelection">批量删除</el-button>
-                <el-input v-model="query.username" placeholder="用户名" class="handle-input mr10"></el-input>
-                <el-date-picker v-model="query.startTime" type="date" placeholder="开始日期" format="yyyy 年 MM 月 dd 日"
-                    value-format="yyyy:MM:dd" class="handle-input mr10">
+                <el-input v-model="requestData.username" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-date-picker v-model="requestData.startTime" type="date" placeholder="开始日期" format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd" class="handle-input mr10">
                 </el-date-picker>
-                <el-date-picker v-model="query.endTime" type="date" placeholder="结束日期" format="yyyy 年 MM 月 dd 日"
-                    value-format="yyyy:MM:dd" class="handle-input mr10">
+                <el-date-picker v-model="requestData.endTime" type="date" placeholder="结束日期" format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd" class="handle-input mr10">
                 </el-date-picker>
                 <el-button type="primary" size="mini" icon="el-icon-search" @click="handleSearch">搜索</el-button>
                 <el-button icon="el-icon-refresh" size="mini" @click="handRefresh">重置</el-button>
             </div>
+
+            <!-- 数据区域 -->
             <el-table :data="tableData" border class="table" ref="multipleTable" header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -49,19 +53,22 @@
                     </template>
                 </el-table-column>
             </el-table>
+
             <!-- 分页组件 -->
             <div class="block" style="margin-top:50px;float:right">
-                <el-pagination :current-page="query.page" :page-sizes="[5, 10, 15, 20]" :page-size="query.pageSize"
+                <el-pagination :current-page="requestData.page" :page-sizes="[5, 10, 15, 20]" :page-size="requestData.pageSize"
                     layout="total, sizes, prev, pager, next, jumper" :total="pageTotal" @size-change="handleSizeChange"
                     @current-change="handleCurrentChange" />
             </div>
+
         </div>
 
         <!-- 编辑弹出框 -->
         <el-dialog :title="visibleTitle" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" :rules="rules" label-width="70px">
                 <el-form-item label="用户名" prop="username">
-                    <el-input v-model="form.username" disabled></el-input>
+                    <el-input v-model="form.username" v-if="!isAdd" disabled></el-input>
+                    <el-input v-model="form.username" v-else></el-input>
                 </el-form-item>
                 <el-form-item label="昵称" prop="nickname">
                     <el-input v-model="form.nickname"></el-input>
@@ -74,7 +81,7 @@
                 </el-form-item>
                 <el-form-item label="头像">
                     <el-upload class="avatar-uploader" action="/api/file/upload" :show-file-list="false"
-                        :on-success="handleAvatarSuccess">
+                        :on-success="handleAvatarSuccess" :headers="headerObj">
                         <img v-if="form.avatar" :src="form.avatar" class="avatar">
                         <img v-if="imgUrl" :src="imgUrl" class="avatar">
                         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -136,7 +143,7 @@
                     label-class-name="my-label">
                     <template slot="extra">
                         <el-button type="primary" size="mini" icon="el-icon-edit"
-                            @click="editResumeInfo(resumeInfo.id)">编辑</el-button>
+                            @click="editResumeInfo(resumeInfo.userId)">编辑</el-button>
                     </template>
                     <el-descriptions-item label="性别" :contentStyle="{ 'width': '180px' }" v-if="resumeInfo.sex === 0">
                         <span>男</span>
@@ -185,7 +192,7 @@
                     <el-descriptions-item label="起止时间" :span="3">
                         {{ item.startTime }} ~~ {{ item.endTime }}
                     </el-descriptions-item>
-                    <el-descriptions-item label="教育简述" :span="3">
+                    <el-descriptions-item label="主修专业" :span="3">
                         {{ item.descriptions }}
                     </el-descriptions-item>
                 </el-descriptions>
@@ -257,7 +264,7 @@ export default {
             education: [],
             experience: [],
             project: [],
-            query: {
+            requestData: {
                 email: "",
                 endTime: "",
                 page: 1,
@@ -265,6 +272,9 @@ export default {
                 startTime: "",
                 type: 4,
                 username: ""
+            },
+            headerObj:{
+                token:localStorage.getItem('token')
             },
             multipleSelection: [],
             editVisible: false,
@@ -292,21 +302,19 @@ export default {
                 tel: [
                     { required: true, message: '请输入电话号码', trigger: 'blur' },
                 ],
-                age: [
-                    { required: true, message: '请输入年龄', trigger: 'blur' },
-                    // { type:"number", message: '年龄格式错误', trigger: 'blur' }
-                ],
+                // age: [
+                //     { required: true, message: '请输入年龄', trigger: 'blur' },
+                // ],
             }
         };
     },
     created() {
-        this.getData();
+        this.getData()
     },
     methods: {
         // 获取 用户列表
         getData() {
-            api.getUserList(this.query).then((result) => {
-                console.log(result);
+            api.getUserList(this.requestData).then((result) => {
                 this.tableData = result.data.records
                 this.pageTotal = result.data.total
             });
@@ -400,10 +408,11 @@ export default {
         },
         // 重置查询表单
         handRefresh() {
-            this.query.username = ''
-            this.query.startTime = ''
-            this.query.email = ''
-            this.query.endTime = ''
+            this.requestData.username = ''
+            this.requestData.startTime = ''
+            this.requestData.email = ''
+            this.requestData.endTime = ''
+            this.getData();
 
         },
         // 触发搜索按钮
@@ -429,7 +438,6 @@ export default {
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val
-            console.log(val);
         },
         // 批量删除
         delAllSelection() {
@@ -441,7 +449,6 @@ export default {
             this.multipleSelection.forEach(function (item, index) {
                 ids[index] = item.id
             })
-            console.log(ids);
             this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
@@ -460,7 +467,7 @@ export default {
         },
         // 添加操作
         addUser() {
-            this.visibleTitle = "添加"
+            this.visibleTitle = "添加用户"
             this.resetForm()
             this.imgUrl = ''
             this.editVisible = true
@@ -469,17 +476,14 @@ export default {
         // 编辑操作
         handleEdit(row) {
             this.isAdd = false
-            this.editVisible = true;
+            this.editVisible = true
             api.getUserById(row.id).then((result) => {
-                if (result.success == true) {
                     this.form = result.data
-                } else {
-                    this.$message.error(result.msg)
-                }
             })
             this.visibleTitle = "编辑"
 
         },
+        // 重置弹出框数据
         resetForm() {
             this.form = {}
             this.resumeForm = {}
@@ -520,7 +524,6 @@ export default {
             if (response.success == true) {
                 this.form.avatar = response.msg
                 this.imgUrl = response.msg
-                console.log(response.msg);
             } else {
                 this.$message.error(response.msg + "请重新上传！")
             }
@@ -529,16 +532,16 @@ export default {
         },
         // 改变当前页
         handleCurrentChange(val) {
-            this.query.page = val
+            this.requestData.page = val
             this.getData();
         },
         // 改变每页展示的条数
         handleSizeChange(val) {
-            this.query.pageSize = val
+            this.requestData.pageSize = val
             this.getData()
         }
     }
-};
+}
 </script>
 
 <style>
@@ -580,6 +583,7 @@ export default {
 }
 
 .avatar-uploader .el-upload {
+    width:330px;
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;

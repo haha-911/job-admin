@@ -10,7 +10,7 @@
         </div>
         <div class="container">
             <div class="form-box">
-                <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+                <el-form ref="form" :model="form" label-width="80px">
                     <el-form-item label="公司名称" prop="name">
                         <el-input v-model="form.name" width="200px"></el-input>
                     </el-form-item>
@@ -31,22 +31,17 @@
                         <el-input type="textarea" rows="2" v-model="form.mission"></el-input>
                     </el-form-item>
                     <el-form-item label="LOGO">
-                        <el-upload
-                            class="avatar-uploader"
-                            drag
-                            action="/api/file/upload"
-                            :on-success="handleAvatarSuccess"
-                            >
+                        <el-upload class="avatar-uploader" drag action="/api/file/upload" :on-success="handleAvatarSuccess" :headers="headerObject">
                             <img v-if="imgUrl" :src="imgUrl" class=avatar>
                             <img v-if="form.logo" :src="form.logo" class="avatar">
                             <div v-else>
-                                 <i class="el-icon-upload"></i>
-                                 <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                                <i class="el-icon-upload"></i>
+                                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
                             </div>
-                           
+
                             <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
-                            </el-upload>
-                           </el-form-item>
+                        </el-upload>
+                    </el-form-item>
                     <el-form-item label="公司简介">
                         <el-input type="textarea" rows="5" v-model="form.description"></el-input>
                     </el-form-item>
@@ -58,7 +53,7 @@
                 </el-form>
             </div>
         </div>
-    </div>
+</div>
 </template>
 
 <script>
@@ -68,87 +63,90 @@ export default {
     data() {
         return {
             form: {
-                name:'',
-                foreignName:'',
-                city:'',
-                state:'',
-                mission:'',
-                description:'',
-                logo:''
+                name: '',
+                foreignName: '',
+                city: '',
+                state: '',
+                mission: '',
+                description: '',
+                logo: ''
             },
-            imgUrl:'',
+            headerObject:{
+                token:localStorage.getItem('token')
+            },
+            imgUrl: '',
         };
     },
     created() {
-       this.updateCompany();
+        this.updateCompany();
     },
     methods: {
         addCompany() {
             // 添加
-            if(!this.form.id){
-                 api.addCompany(this.form).then((result)=>{
-                if(result.success){
-                    this.$message.success(result.msg)
-                    this.form = {}
-                    this.imgUrl = ''
-                    this.$router.go(-1)
-                }else{
-                    this.$message.error(result.msg)
-                }
-            })
+            if (!this.form.id) {
+                api.addCompany(this.form).then((result) => {
+                    if (result.success) {
+                        this.$message.success(result.msg)
+                        this.form = {}
+                        this.imgUrl = ''
+                        this.$router.go(-1)
+                    } else {
+                        this.$message.error(result.msg)
+                    }
+                })
             }
 
             // 更新
-            if(this.form.id){
-                api.updateCompany(this.form).then((result)=>{
-                if(result.success){
-                    this.$message.success(result.msg)
-                    this.form = {}
-                    this.imgUrl = ''
-                    this.$router.go(-1)
-                }else{
-                    this.$message.error(result.msg)
-                }
-            })
+            if (this.form.id) {
+                api.updateCompany(this.form).then((result) => {
+                    if (result.success) {
+                        this.$message.success(result.msg)
+                        this.form = {}
+                        this.imgUrl = ''
+                        this.$router.go(-1)
+                    } else {
+                        this.$message.error(result.msg)
+                    }
+                })
             }
-           
-           
+
+
         },
         // 接收传参
-        updateCompany(){
-            if(this.$route.params.company){
-                 this.form = this.$route.params.company
+        updateCompany() {
+            if (this.$route.params.company) {
+                this.form = this.$route.params.company
             }
         },
         // 上传头像
-        handleAvatarSuccess(response){
-            if(response.success == true){
+        handleAvatarSuccess(response) {
+            if (response.success == true) {
                 this.form.logo = response.msg
                 this.imgUrl = response.msg
                 console.log(response.msg);
-            }else{
-                this.$message.error(response.msg+"请重新上传！")
+            } else {
+                this.$message.error(response.msg + "请重新上传！")
             }
         },
         // 取消操作
-        cancel(){
+        cancel() {
             this.$router.go(-1)
         },
         // 重置数据
-        restData(){
+        restData() {
             this.form = {}
             this.imgUrl = ""
         },
         // 保存并继续添加
-        
+
     }
 };
 </script>
 
 <style scoped>
- .avatar {
+.avatar {
     width: 100%;
     height: 100%;
     display: block;
-  }
+}
 </style>

@@ -30,7 +30,7 @@ export default {
     // 通过ID获得
     getPositionById(id) {
         return request({
-            url: `${api_name}/${id}`,
+            url: `${api_name}/get/${id}`,
             method:'get'
         })
     },
