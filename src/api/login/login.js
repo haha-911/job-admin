@@ -8,7 +8,6 @@ export default{
             data:data
         })
     },
-
     getUserInfo(){
         return request({
             url:'/api/getUser',
@@ -21,11 +20,11 @@ export default{
             method:'get'
         })
     },
-    updateUserPwd(id,param){
+    updateUserPwd(data){
         return request({
-            url:`/api/job/user/changePwd/${id}`,
+            url:`/api/job/user/changePwd`,
             method:'put',
-            params:param
+            data:data
         })
     }
 }

@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
+        <el-dialog title="修改密码" :visible.sync="dialogVisible" width="30%">
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="旧密码" prop="oldPwd">
                     <el-input type="password" v-model="ruleForm.oldPwd" autocomplete="off"></el-input>
@@ -121,12 +121,12 @@ export default {
         changePwd(formName) {
             this.$refs[formName].validate((valid) => {
           if (valid) {
-
-            const param = {}
-            param.oldPwd = this.ruleForm.oldPwd
-            param.newPwd = this.ruleForm.newPwd
+            const param ={}
+           param.id = this.userInfo.id
+           param.oldPwd = this.ruleForm.oldPwd
+           param.newPwd = this.ruleForm.newPwd
             console.log(param)
-            api.updateUserPwd(this.userInfo.id,param).then((result) => {
+            api.updateUserPwd(param).then((result) => {
                 if (result.success){
                     this.$message.success(result.msg)
                     setTimeout(() => {
