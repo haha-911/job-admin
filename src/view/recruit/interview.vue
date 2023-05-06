@@ -53,17 +53,12 @@
                 <el-table-column type="expand">
                     <template slot-scope="props">
                       <el-form label-position="left" inline class="demo-table-expand">
-                        <el-form-item label="用户邮箱">
-                          <span>{{ props.row.uemail }}</span>
-                        </el-form-item>
+                       
                         <el-form-item label="用户电话">
-                            <span>{{ props.row.utel }}</span>
-                          </el-form-item>
-                          <el-form-item label="HR邮箱">
-                            <span>{{ props.row.hemail }}</span>
+                            <span>{{ props.row.userTel }}</span>
                           </el-form-item>
                           <el-form-item label="HR电话">
-                              <span>{{ props.row.htel }}</span>
+                              <span>{{ props.row.hrTel }}</span>
                             </el-form-item>
                         <el-form-item label="面试地址">
                             <span>{{ props.row.address }}</span>
@@ -81,8 +76,8 @@
                   </el-table-column>
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
                 <el-table-column prop="title" label="职位名称"></el-table-column>
-                <el-table-column prop="userName" label="用户名称"></el-table-column>
-                <el-table-column prop="hRName" label="HR姓名" align="center"></el-table-column>
+                <el-table-column prop="username" label="用户名称"></el-table-column>
+                <el-table-column prop="hrName" label="HR姓名" align="center"></el-table-column>
                 <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                 <el-table-column label="面试状态" align="center">
                     <template slot-scope="scope">

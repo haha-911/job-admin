@@ -1,7 +1,7 @@
 <template>
     <div class="login-wrap">
         <div class="ms-login">
-            <div class="ms-title">后台管理系统登录</div>
+            <div class="ms-title">合马管理系统登录</div>
             <el-form :model="param" :rules="rules" ref="login" class="ms-content">
                 <el-form-item prop="username">
                     <el-input v-model="param.username" placeholder="username">
@@ -64,8 +64,8 @@ export default {
         getUserInfo() {
             api.getUserInfo().then((result) => {
                 this.userInfo = result.data
-                localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
-                this.$router.push("/")
+                sessionStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+                this.$router.push("/dashboard")
             })
         }
     },

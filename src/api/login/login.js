@@ -26,5 +26,11 @@ export default{
             method:'put',
             data:data
         })
+    },
+    getCount(){
+        return request({
+            url:`/api/getCount`,
+            method:'get',
+        })
     }
 }

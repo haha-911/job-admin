@@ -42,8 +42,8 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-lx-people grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
-                                    <div>用户访问量</div>
+                                    <div class="grid-num">{{count.user}}</div>
+                                    <div>用户数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -53,8 +53,8 @@
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-lx-notice grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
-                                    <div>系统消息</div>
+                                    <div class="grid-num">{{count.position}}</div>
+                                    <div>招聘职位</div>
                                 </div>
                             </div>
                         </el-card>
@@ -64,8 +64,8 @@
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-lx-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">5000</div>
-                                    <div>数量</div>
+                                    <div class="grid-num">{{count.company}}</div>
+                                    <div>公司数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -167,6 +167,7 @@ export default {
                     value: 1065
                 }
             ],
+            count:{}
         };
     },
     computed: {
@@ -181,15 +182,24 @@ export default {
             api.getPrevLogin(name).then((result)=>{
                 if(result.success){
                     this.loginlog = result.data
-                    console.log(this.loginlog);
                 }
             })
+        },
+        getCount(){
+            api.getCount().then((result) => {
+                if(result.success){
+                    this.count = result.data
+                }
+            }).catch((err) => {
+                
+            });
         },
 
         getUserInfo(){
            this.userInfo = JSON.parse(localStorage.getItem('userInfo')) 
         //    根据用户名获取上次登录信息
            this.getPrev(this.userInfo.username)
+           this.getCount();
         }
     }
 };

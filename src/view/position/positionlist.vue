@@ -125,7 +125,7 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item v-else label="HR">
-                    <el-input v-model="form.hrName" disabled></el-input>
+                    <el-input v-model="form.nickName" disabled></el-input>
                 </el-form-item>
                 <el-form-item label="招聘需求" prop="requirement">
                     <el-input type="textarea" v-model="form.requirement"></el-input>
@@ -171,7 +171,7 @@ export default {
             rules: {
                 title: [
                     { required: true, message: '请输入标题', trigger: 'blur' },
-                    { min: 3, max: 7, message: '长度在 3 到 7个字符', trigger: 'blur' }
+                    { min: 3, max: 12, message: '长度在 3 到 7个字符', trigger: 'blur' }
                 ],
                 minsalary: [
                     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -290,23 +290,16 @@ export default {
         // 添加操作
         addPosition() {
             this.visibleTitle = "添加"
-            this.form = {}
-            if (this.categoryList.length <= 0) {
-                this.getCategoryList()
-            }
-            if (this.companyList.length === 0) {
-                this.getCompanyList()
-            }
-
+            this.form = {} 
+            this.getCategoryList()
+            this.getCompanyList()
             this.editVisible = true
             this.isAdd = true
         },
         // 编辑操作
         handleEdit(row) {
             this.isAdd = false
-            if (this.categoryList === null) {
-                this.getCategoryList()
-            }
+            this.getCategoryList()
             api.getPositionById(row.id).then((result) => {
                 if (result.success == true) {
                     this.form = result.data
